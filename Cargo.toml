@@ -1,0 +1,7 @@
+[package]
+name = "ontime"
+version = "0.1.0"
+authors = ["Flarp <flurpdadurp@gmail.com>"]
+
+[dependencies]
+typenum = "1.10.0"
