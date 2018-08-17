@@ -1,13 +1,11 @@
 extern crate typenum;
 use typenum::marker_traits::{NonZero, Unsigned};
 use typenum::operator_aliases::Add1;
-use typenum::consts::{U1, U10000000000000000000};
+use typenum::consts::U1;
 use typenum::type_operators::{IsGreaterOrEqual, Max};
-use std::iter::Iterator;
+use std::iter::{Iterator, IntoIterator};
 use std::marker::PhantomData;
 
-#[allow(non_camel_case_types)]
-type BIG_BOY = U10000000000000000000;
 
 // unit struct definitions
 pub struct Const();
@@ -23,9 +21,33 @@ pub trait MaxComplexity<T> {
 }
 pub trait Complexity {}
 
-// edge case of MaxComplexity where the exponent of N() is being incremented
+// edge case of MaxComplexity where the exponent of N(T) is being incremented
 pub trait IncrementN {
     type Output;
+}
+
+impl IncrementN for Const {
+    type Output = N<U1>;
+}
+
+impl IncrementN for LogN {
+    type Output = N<U1>;
+}
+
+impl<T: NonZero + Unsigned> IncrementN for N<T> {
+    type Output = N<Add1<T>>;
+}
+
+impl IncrementN for TwoToN {
+    type Output = TwoToN;
+}
+
+impl IncrementN for NFactorial {
+    type Output = NFactorial;
+}
+
+impl IncrementN for NToN {
+    type Output = NToN;
 }
 
 macro_rules! associative_max {
@@ -97,13 +119,10 @@ pub fn create_O<S: Complexity, T>(real: T) -> O<S, T> {
     O { fake: PhantomData, real: real }
 }
 
-impl<S: Complexity, T: Iterator> Iterator for O<S, T> {
-    type Item = O<S, T::Item>;
+impl<S: Complexity, T: Iterator> Iterator for O<S, T> where LogN: LessComplexThan<S> {
+    type Item = T::Item;
     fn next(&mut self) -> Option<Self::Item> {
-        match self.real.next() {
-            Some(x) => Some(create_O::<S, T::Item>(x)),
-            None => None
-        }
+        self.real.next()
     }
 }
 
