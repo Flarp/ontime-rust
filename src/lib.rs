@@ -1,8 +1,6 @@
 extern crate typenum;
 use typenum::marker_traits::{NonZero, Unsigned};
-use typenum::operator_aliases::Add1;
 use typenum::consts::U1;
-use typenum::bit::B1;
 use typenum::type_operators::{IsGreaterOrEqual, Max};
 use std::iter::Iterator;
 use std::marker::PhantomData;
@@ -35,8 +33,8 @@ impl IncrementN for LogN {
     type Output = N<U1>;
 }
 
-impl<T: NonZero + Unsigned + Add<B1>> IncrementN for N<T> where <T as Add<B1>>::Output: Unsigned + NonZero {
-    type Output = N<Add1<T>>;
+impl<T: NonZero + Unsigned + Add<U1>> IncrementN for N<T> where <T as Add<U1>>::Output: Unsigned + NonZero {
+    type Output = N<<T as Add<U1>>::Output>;
 }
 
 impl IncrementN for TwoToN {
@@ -60,6 +58,8 @@ macro_rules! associative_max {
         impl<T: Unsigned + NonZero> MaxComplexity<$greater> for $lesser {
             type Output = $greater;
         }
+
+        impl<T: Unsigned + NonZero> LessComplexThan<$greater> for $lesser {}
     };
     ($greater:ty, $lesser:ty) => {
         impl MaxComplexity<$lesser> for $greater {
@@ -101,6 +101,8 @@ impl<T: Unsigned + NonZero + Max<U>, U: Unsigned + NonZero> MaxComplexity<N<T>> 
     where <T as Max<U>>::Output: NonZero + Unsigned {
     type Output = N<<T as Max<U>>::Output>;
 }
+
+impl<T: Unsigned + NonZero> Complexity for N<T> {}
 
 implement_ordering!(NToN, NFactorial, TwoToN, LogN, Const);
 
