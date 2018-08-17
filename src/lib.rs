@@ -2,10 +2,11 @@ extern crate typenum;
 use typenum::marker_traits::{NonZero, Unsigned};
 use typenum::operator_aliases::Add1;
 use typenum::consts::U1;
+use typenum::bit::B1;
 use typenum::type_operators::{IsGreaterOrEqual, Max};
-use std::iter::{Iterator, IntoIterator};
+use std::iter::Iterator;
 use std::marker::PhantomData;
-
+use std::ops::Add;
 
 // unit struct definitions
 pub struct Const();
@@ -34,7 +35,7 @@ impl IncrementN for LogN {
     type Output = N<U1>;
 }
 
-impl<T: NonZero + Unsigned> IncrementN for N<T> {
+impl<T: NonZero + Unsigned + Add<B1>> IncrementN for N<T> where <T as Add<B1>>::Output: Unsigned + NonZero {
     type Output = N<Add1<T>>;
 }
 
@@ -126,3 +127,8 @@ impl<S: Complexity, T: Iterator> Iterator for O<S, T> where LogN: LessComplexTha
     }
 }
 
+impl<T> O<Const, T> {
+    pub fn unwrap(&self) -> &T {
+        &self.real
+    }
+}
